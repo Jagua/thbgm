@@ -2,12 +2,12 @@
 # vim:fileencoding=utf-8
 # -*- Mode: Ruby; Encoding: utf8n -*-
 $stdout.sync = true
-$stdout.set_encoding("CP932")
+$stdout.set_encoding("CP932") if RUBY_PLATFORM =~ /(?:mswin|mingw|cygwin)/
 require 'optparse'
 require 'yaml'
 
-Version = '0.2'
-puts "thbgm.rb version #{Version} (2011-09-25)" # version
+Version = '0.3'
+puts "thbgm.rb version #{Version} (2014-03-16)" # version
 
 if RUBY_VERSION<'1.9'
   puts "This script run on ruby1.9. your ruby version is #{RUBY_VERSION}."
@@ -20,7 +20,7 @@ thbgm_yml = YAML.load_file(yaml_file)
 op = OptionParser.new
 opt={}
 opt[:loop]= 1
-op.on('--th=VALUE', 'th no. (VALUE: 06,07,..,13)') {|v| opt[:th] = 'th'+v}
+op.on('--th=VALUE', 'th no. (VALUE: th06,th07,..,th14,alcostg)') {|v| opt[:th] = v}
 op.on('--loop=VALUE', 'loop count. (VALUE: 0-)') {|v| opt[:loop] = v}
 op.on('--track=VALUE', 'track no.') {|v| opt[:track] = v}
 op.on('--omit-subtitle', 'omit subtitle from title') {|v| opt[:omitsubttl] = v}
