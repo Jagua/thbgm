@@ -6,8 +6,8 @@ $stdout.set_encoding("CP932") if RUBY_PLATFORM =~ /(?:mswin|mingw|cygwin)/
 require 'optparse'
 require 'yaml'
 
-Version = '0.3'
-puts "thbgm.rb version #{Version} (2014-03-16)" # version
+Version = '0.4'
+puts "thbgm.rb version #{Version} (2014-04-23)" # version
 
 if RUBY_VERSION<'1.9'
   puts "This script run on ruby1.9. your ruby version is #{RUBY_VERSION}."
@@ -37,23 +37,25 @@ thbgm = thbgm_yml["thbgm"][opt[:th]]
 default_filename = "%th%_%track% %title%.wav"
 
 if File.exist?(titles_file) and File.exist?(thbgm)
-  list = open(titles_file, "r").lines.select{|s| s !~ /^(?:\#|@)/}
+  list = open(titles_file, "r", {:encoding => (opt[:th]=='alcostg' ? Encoding::UTF_8 : Encoding::CP932)}).each_line.select{|s| s !~ /^(?:\#(?!=SamplingRate)|@)/}
   dat = open(thbgm, "rb").read
 
   i="00"
   list.each do |ln0|
     ln = ln0.encode(Encoding::UTF_8)
-    ln =~ /^([0-9a-fA-F]+),([0-9a-fA-F]+),([0-9a-fA-F]+),([^　]+.*?)(　?.*?)$/
-    offset = $1.to_s.to_i(16)
-    intro = $2.to_s.to_i(16)
-    loop = $3.to_s.to_i(16)
-    title = $4.strip
-    subtitle = $5.strip
+    ln =~ /^(#=SamplingRate,22050,)?([0-9a-fA-F]+),([0-9a-fA-F]+),([0-9a-fA-F]+),([^　]+.*?)(　?.*?)$/
+    flag = $1
+    offset = $2.to_s.to_i(16)
+    intro = $3.to_s.to_i(16)
+    loop = $4.to_s.to_i(16)
+    title = $5.strip
+    subtitle = $6.strip
     title += subtitle unless opt[:omitsubttl]
     size = intro + loop*opt[:loop].to_i
     filename = opt[:filename]?opt[:filename]:(default_filename)
     filename = filename.gsub(/%.*?%/, {'%th%'=>opt[:th], '%track%'=>i, '%title%'=>title})
-    riffheader = ["RIFF", size+44-8, "WAVEfmt ",  16, 1, 2, 44100, 44100*2*2, 2*2, 16, "data", size].pack("A4VA8VvvVVvvA4V")
+    d = (flag.nil? ? 1 : 2)
+    riffheader = ["RIFF", size+44-8, "WAVEfmt ",  16, 1, 2, (44100/d), (44100/2)*2*2, 2*2, 16, "data", size].pack("A4VA8VvvVVvvA4V")
     open(filename, "wb"){|f|
       f.write riffheader
       f.write dat[offset, intro]
