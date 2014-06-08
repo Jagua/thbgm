@@ -21,6 +21,7 @@ op = OptionParser.new
 opt={}
 opt[:loop]= 1
 op.on('--th=VALUE', 'th no. (VALUE: th06,th07,..,th14,alcostg)') {|v| opt[:th] = v}
+op.on('--dat=VALUE', 'specific path to the thbgm.dat. (VALUE: /path/to/thbgm.dat)') {|v| opt[:dat] = v}
 op.on('--loop=VALUE', 'loop count. (VALUE: 0-)') {|v| opt[:loop] = v}
 op.on('--track=VALUE', 'track no.') {|v| opt[:track] = v}
 op.on('--omit-subtitle', 'omit subtitle from title') {|v| opt[:omitsubttl] = v}
@@ -33,7 +34,7 @@ unless opt[:th]
 end
 
 titles_file = "titles/titles_#{opt[:th]}.txt"
-thbgm = thbgm_yml["thbgm"][opt[:th]]
+thbgm = opt[:dat] || thbgm_yml["thbgm"][opt[:th]]
 default_filename = "%th%_%track% %title%.wav"
 
 if File.exist?(titles_file) and File.exist?(thbgm)
